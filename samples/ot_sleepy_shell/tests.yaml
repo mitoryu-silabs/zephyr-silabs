@@ -1,0 +1,31 @@
+common:
+  harness: net
+  tags:
+    - net
+    - openthread
+  depends_on: openthread
+sample:
+  description: Test Thread and IEEE 802.15.4 using the OpenThread sleepy shell
+  name: OpenThread Sleepy Shell
+tests:
+  sample.net.openthread.sleepy_shell.xg24_rb4187c:
+    skip: true
+    build_only: true
+    extra_args:
+      - CONFIG_BUILD_ONLY_NO_BLOBS=y
+    platform_allow:
+      - xg24_rb4187c
+  sample.net.openthread.sleepy_shell.slwrb4180a:
+    skip: true
+    build_only: true
+    extra_args:
+      - CONFIG_BUILD_ONLY_NO_BLOBS=y
+    platform_allow:
+      - slwrb4180a
+  sample.net.openthread.sleepy_shell.xg24_dk2601b:
+    skip: true
+    build_only: true
+    extra_args:
+      - CONFIG_BUILD_ONLY_NO_BLOBS=y
+    platform_allow:
+      - xg24_dk2601b
