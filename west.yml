@@ -21,6 +21,8 @@ manifest:
       url-base: https://github.com/zephyrproject-rtos
     - name: silabs
       url-base: https://github.com/siliconlabssoftware
+    - name: asmellby
+      url-base: https://github.com/asmellby
 
   projects:
     - name: zephyr
@@ -66,3 +68,7 @@ manifest:
       remote: silabs
       revision: 8aa1800556b32fc4fb4d46ef4d880c05ee0ea5a8
       path: modules/hal/silabs_extra
+    - name: zephyr-openthread
+      remote: asmellby
+      revision: 788b21174826222c62b5cbbf1027a5eb92ee5ffb
+      path: modules/lib/openthread
