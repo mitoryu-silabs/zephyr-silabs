@@ -23,11 +23,13 @@ manifest:
       url-base: https://github.com/siliconlabssoftware
     - name: asmellby
       url-base: https://github.com/asmellby
+    - name: mitoryu
+      url-base: https://github.com/mitoryu-silabs
 
   projects:
     - name: zephyr
-      remote: silabs
-      revision: 99b029282233125251412bbbff533aac98edcf9f
+      remote: mitoryu
+      revision: 388a3b4541afd8c918b5cfa6a41fa56c5257dcfa
       import:
         # Simplicity SDK for Zephyr imports the Zephyr main tree at the
         # revision given above. Only the modules named below are imported.
