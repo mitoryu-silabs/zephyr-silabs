@@ -52,9 +52,9 @@ manifest:
       revision: 507ef981a843bc8f38e2f5c4b80dce3766401429
       path: modules/hal/silabs
     - name: openthread
-      remote: silabs
+      remote: asmellby
       repo-path: zephyr-openthread
-      revision: e3ee3c9c4ce492835e3e7fa8663aa90765773823
+      revision: 788b21174826222c62b5cbbf1027a5eb92ee5ffb
       path: modules/lib/openthread
     - name: mcuboot
       remote: silabs
@@ -67,10 +67,6 @@ manifest:
       revision: 98c6e5b2c40336b5ac840efd42822f82bccfa7ba
       path: modules/crypto/tf-psa-crypto
     - name: zephyr-hal-silabs-extra
-      remote: silabs
-      revision: 8aa1800556b32fc4fb4d46ef4d880c05ee0ea5a8
-      path: modules/hal/silabs_extra
-    - name: zephyr-openthread
       remote: asmellby
-      revision: 788b21174826222c62b5cbbf1027a5eb92ee5ffb
-      path: modules/lib/openthread
+      revision: ce40265406d7562d05afaed6fa828f6d63cb9444
+      path: modules/hal/silabs_extra
