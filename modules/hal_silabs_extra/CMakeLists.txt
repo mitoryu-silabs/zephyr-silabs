@@ -29,6 +29,10 @@ if(CONFIG_OPENTHREAD_LIBRARY)
   zephyr_system_include_directories(${ZEPHYR_OPENTHREAD_MODULE_DIR}/include)
   zephyr_system_include_directories(${ZEPHYR_OPENTHREAD_MODULE_DIR}/examples/platforms)
 
+  # The prebuilt stack is compiled with the external address pool feature, so
+  # anything sharing OpenThread core headers must agree on the Netif layout.
+  zephyr_compile_definitions(OPENTHREAD_CONFIG_IP6_INIT_EXT_ADDR_POOL_ENABLE=1)
+
   if(CONFIG_OPENTHREAD_FTD)
     set(device "ftd")
     set(cli_lib openthread-cli-ftd)
@@ -97,6 +101,7 @@ if(CONFIG_OPENTHREAD_LIBRARY)
     zephyr_library_compile_definitions_ifdef(CONFIG_OPENTHREAD_DATASET_UPDATER        OPENTHREAD_CONFIG_DATASET_UPDATER_ENABLE=1)
     zephyr_library_compile_definitions_ifdef(CONFIG_OPENTHREAD_NETDATA_PUBLISHER      OPENTHREAD_CONFIG_NETDATA_PUBLISHER_ENABLE=1)
     zephyr_library_compile_definitions_ifdef(CONFIG_OPENTHREAD_ENABLE_SERVICE         OPENTHREAD_CONFIG_TMF_NETDATA_SERVICE_ENABLE=1)
+    zephyr_library_compile_definitions_ifdef(CONFIG_OPENTHREAD_CLI_IFCONFIG_INIT      OPENTHREAD_CONFIG_CLI_IFCONFIG_INIT_ENABLE=1)
 
     zephyr_library_include_directories(
       ${ZEPHYR_OPENTHREAD_MODULE_DIR}/src

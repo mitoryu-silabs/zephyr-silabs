@@ -25,9 +25,6 @@ config OPENTHREAD_LIBRARY
 
 endchoice
 
-configdefault OPENTHREAD_CRYPTO_PLATFORM_ALLOCS_CONTEXT
-	default y
-
 if OPENTHREAD_LIBRARY
 
 config OPENTHREAD_LIBRARY_DEFAULT
@@ -41,6 +38,17 @@ config OPENTHREAD_LIBRARY_COAP
 config OPENTHREAD_LIBRARY_COAP_MI
 	bool
 	default y if OPENTHREAD_MULTIPLE_INSTANCE && OPENTHREAD_COAP
+
+configdefault OPENTHREAD_CRYPTO_PLATFORM_ALLOCS_CONTEXT
+	default y
+
+config OPENTHREAD_CLI_IFCONFIG_INIT
+	bool "CLI \"ifconfig init\" command"
+	depends on SHELL
+	default y
+	help
+	  Support the "ifconfig init" CLI command, which sizes the external
+	  unicast and multicast address pools at runtime. Intended for testing.
 
 endif
 
