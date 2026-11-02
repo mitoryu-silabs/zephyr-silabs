@@ -8,7 +8,9 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(openthread_sleepy_shell_sample, LOG_LEVEL_INF);
 
+#include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/uart.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/atomic.h>
 
@@ -16,12 +18,34 @@ LOG_MODULE_REGISTER(openthread_sleepy_shell_sample, LOG_LEVEL_INF);
 
 #define OT_SLEEP_TOGGLE_BUTTON_NODE DT_ALIAS(sw0)
 
+#if DT_HAS_CHOSEN(zephyr_shell_uart)
+static const struct device *const shell_uart = DEVICE_DT_GET(DT_CHOSEN(zephyr_shell_uart));
+#endif
+
 #if defined(CONFIG_OPENTHREAD_PLATFORM_DEEP_SLEEP)
 static atomic_t allow_deep_sleep;
 
 bool platformPowerAllowDeepSleepCallback(void)
 {
 	return atomic_get(&allow_deep_sleep) != 0;
+}
+
+static void shell_uart_receive_set(bool enabled)
+{
+#if DT_HAS_CHOSEN(zephyr_shell_uart) && defined(CONFIG_UART_INTERRUPT_DRIVEN)
+	if (!device_is_ready(shell_uart)) {
+		LOG_WRN("Shell UART is not ready");
+		return;
+	}
+
+	if (enabled) {
+		uart_irq_rx_enable(shell_uart);
+	} else {
+		uart_irq_rx_disable(shell_uart);
+	}
+#else
+	ARG_UNUSED(enabled);
+#endif
 }
 #endif
 
@@ -40,6 +64,15 @@ static void sleep_toggle_button_work_handler(struct k_work *work)
 
 	LOG_INF("OpenThread sleepy shell switching to %s mode",
 		atomic_get(&allow_deep_sleep) ? "EM2 (sleep)" : "EM1 (idle)");
+
+	/*
+	 * The shell keeps the UART receiver enabled, which prevents the USART
+	 * driver from permitting EM2. Disable reception after the status message
+	 * is queued; it is restored when the button selects EM1 again.
+	 */
+	if (atomic_get(&allow_deep_sleep)) {
+		shell_uart_receive_set(false);
+	}
 }
 
 static void sleep_toggle_button_pressed(const struct device *port, struct gpio_callback *cb,
@@ -50,6 +83,9 @@ static void sleep_toggle_button_pressed(const struct device *port, struct gpio_c
 	ARG_UNUSED(pins);
 
 	atomic_set(&allow_deep_sleep, !atomic_get(&allow_deep_sleep));
+	if (!atomic_get(&allow_deep_sleep)) {
+		shell_uart_receive_set(true);
+	}
 	k_work_submit(&sleep_toggle_button_work);
 	otSysEventSignalPending();
 }
