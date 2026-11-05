@@ -12,14 +12,65 @@ LOG_MODULE_REGISTER(openthread_sleepy_shell_sample, LOG_LEVEL_INF);
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/kernel.h>
+#include <zephyr/net/openthread.h>
 #include <zephyr/sys/atomic.h>
 
 #include <openthread-system.h>
+#include <openthread/link.h>
+#include <openthread/thread.h>
 
 #define OT_SLEEP_TOGGLE_BUTTON_NODE DT_ALIAS(sw0)
 
 #if DT_HAS_CHOSEN(zephyr_shell_uart)
 static const struct device *const shell_uart = DEVICE_DT_GET(DT_CHOSEN(zephyr_shell_uart));
+#endif
+
+#if defined(CONFIG_OPENTHREAD_MTD_SED)
+/*
+ * OPENTHREAD_MANUAL_START defaults to y on Silabs SoCs, so openthread_run()
+ * never runs and the sleepy link mode and poll period it would derive from
+ * CONFIG_OPENTHREAD_MTD_SED are never applied. The receiver would then stay on
+ * when idle, holding the radio's EM1 requirement and making EM2 unreachable.
+ */
+static void sleepy_link_mode_init(void)
+{
+	otInstance *instance = openthread_get_default_instance();
+	otLinkModeConfig mode;
+	otError error;
+
+	if (instance == NULL) {
+		LOG_WRN("OpenThread instance is not available");
+		return;
+	}
+
+	openthread_mutex_lock();
+
+	/*
+	 * Request the full Network Data as well, matching "ot mode n". Clearing
+	 * only mRxOnWhenIdle would leave the stack's default minimal device mode
+	 * with no bits set ("-"), which requests just the stable subset.
+	 */
+	mode = otThreadGetLinkMode(instance);
+	mode.mRxOnWhenIdle = false;
+	mode.mDeviceType = false;
+	mode.mNetworkData = true;
+
+	error = otThreadSetLinkMode(instance, mode);
+	if (error != OT_ERROR_NONE) {
+		LOG_WRN("Failed to set sleepy link mode: %d", error);
+	} else {
+		error = otLinkSetPollPeriod(instance, CONFIG_OPENTHREAD_POLL_PERIOD);
+		if (error != OT_ERROR_NONE) {
+			LOG_WRN("Failed to set poll period: %d", error);
+		}
+	}
+
+	openthread_mutex_unlock();
+}
+#else
+static void sleepy_link_mode_init(void)
+{
+}
 #endif
 
 #if defined(CONFIG_OPENTHREAD_PLATFORM_DEEP_SLEEP)
@@ -142,6 +193,7 @@ int main(void)
 	DT_NODE_HAS_STATUS(OT_SLEEP_TOGGLE_BUTTON_NODE, okay)
 	k_work_init(&sleep_toggle_button_work, sleep_toggle_button_work_handler);
 #endif
+	sleepy_link_mode_init();
 	sleep_toggle_button_init();
 
 	return 0;
